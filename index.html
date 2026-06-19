@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Registro de Campo</title>
+<style>
+  :root {
+    /* Tema Acolhedor (feminino) */
+    --f-bg: #FBF3F0;
+    --f-bg2: #F4E4DF;
+    --f-accent: #B5707A;
+    --f-accent-dark: #8C4F58;
+    --f-text: #4A3537;
+    --f-gold: #D4A574;
+    --f-light: #F0DAD3;
+
+    /* Tema Sóbrio (masculino) */
+    --m-bg: #F0EEE8;
+    --m-bg2: #E2E5DE;
+    --m-accent: #4A6670;
+    --m-accent-dark: #344850;
+    --m-text: #2C3539;
+    --m-gold: #8B9D83;
+    --m-light: #DCE2DA;
+
+    --radius: 16px;
+    --shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: var(--bg, var(--f-bg));
+    color: var(--text, var(--f-text));
+    min-height: 100vh;
+    transition: background 0.3s ease;
+  }
+
+  body.theme-fem {
+    --bg: var(--f-bg); --bg2: var(--f-bg2); --accent: var(--f-accent);
+    --accent-dark: var(--f-accent-dark); --text: var(--f-text); --gold: var(--f-gold); --light: var(--f-light);
+  }
+  body.theme-masc {
+    --bg: var(--m-bg); --bg2: var(--m-bg2); --accent: var(--m-accent);
+    --accent-dark: var(--m-accent-dark); --text: var(--m-text); --gold: var(--m-gold); --light: var(--m-light);
+  }
+
+  .sans { font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif; }
+
+  /* ── LOGIN SCREEN ── */
+  #login-screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+    background: linear-gradient(160deg, var(--f-bg) 0%, var(--f-bg2) 100%);
+  }
+
+  .login-mark {
+    width: 64px; height: 64px;
+    margin-bottom: 20px;
+    opacity: 0.9;
+  }
+
+  .login-title {
+    font-size: 1.9rem;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    color: var(--f-text);
+    margin-bottom: 4px;
+    text-align: center;
+  }
+  .login-sub {
+    font-family: -apple-system, sans-serif;
+    font-size: 0.88rem;
+    color: #9a8589;
+    margin-bottom: 36px;
+    text-align: center;
+  }
+
+  .login-card {
+    width: 100%;
+    max-width: 360px;
+    background: rgba(255,255,255,0.6);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    box-shadow: var(--shadow);
+  }
+
+  .login-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1.5px solid var(--f-light);
+    border-radius: 12px;
+    font-size: 1rem;
+    font-family: -apple-system, sans-serif;
+    background: #fff;
+    color: var(--f-text);
+    margin-bottom: 14px;
+  }
+  .login-input:focus { outline: none; border-color: var(--f-accent); }
+
+  .theme-pick { display: flex; gap: 10px; margin-bottom: 18px; }
+  .theme-opt {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    text-align: center;
+    font-family: -apple-system, sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .theme-opt.fem { background: linear-gradient(135deg, #F4E4DF, #B5707A); color: #fff; }
+  .theme-opt.masc { background: linear-gradient(135deg, #E2E5DE, #4A6670); color: #fff; }
+  .theme-opt.selected { border-color: var(--f-text); transform: scale(1.03); }
+
+  .btn-login {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    background: var(--f-accent);
+    color: #fff;
+    font-family: -apple-system, sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-login:active { opacity: 0.85; }
+
+  .login-error {
+    color: #b71c1c;
+    font-family: -apple-system, sans-serif;
+    font-size: 0.82rem;
+    text-align: center;
+    margin-top: 10px;
+    min-height: 18px;
+  }
+
+  /* ── APP ── */
+  #app-screen { display: none; min-height: 100vh; padding-bottom: 90px; }
+
+  .header {
+    background: var(--accent);
+    color: #fff;
+    padding: 22px 20px 18px;
+    border-radius: 0 0 24px 24px;
+  }
+  .header-top { display: flex; justify-content: space-between; align-items: center; }
+  .header-greet { font-size: 1.5rem; font-weight: 400; }
+  .header-user { font-family: -apple-system, sans-serif; font-size: 0.78rem; opacity: 0.85; }
+  .header-logout {
+    font-family: -apple-system, sans-serif;
+    font-size: 0.72rem;
+    background: rgba(255,255,255,0.18);
+    border: none;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+
+  .meta-bar {
+    margin-top: 16px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .meta-row { display: flex; justify-content: space-between; align-items: baseline; font-family: -apple-system, sans-serif; }
+  .meta-num { font-size: 1.6rem; font-weight: 700; }
+  .meta-label { font-size: 0.75rem; opacity: 0.85; }
+  .meta-bar-track { height: 6px; background: rgba(255,255,255,0.25); border-radius: 4px; margin-top: 10px; overflow: hidden; }
+  .meta-bar-fill { height: 100%; background: #fff; border-radius: 4px; transition: width 0.4s ease; }
+
+  .tabs {
+    display: flex;
+    background: var(--bg);
+    padding: 10px 16px 0;
+    gap: 4px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px 4px;
+    font-family: -apple-system, sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #9a8a8c;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+  }
+  .tab.active { color: var(--accent-dark); border-bottom-color: var(--accent); }
+
+  .page { display: none; padding: 18px 16px; }
+  .page.active { display: block; }
+
+  .card {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+  }
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 400;
+    margin-bottom: 14px;
+    color: var(--text);
+  }
+
+  .form-group { margin-bottom: 14px; }
+  .form-group label {
+    display: block;
+    font-family: -apple-system, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #8a7a7c;
+    margin-bottom: 6px;
+  }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--light);
+    border-radius: 10px;
+    font-family: -apple-system, sans-serif;
+    font-size: 0.92rem;
+    color: var(--text);
+    background: #fdfdfd;
+  }
+  .form-group textarea { min-height: 70px; resize: vertical; }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    outline: none; border-color: var(--accent);
+  }
+
+  .pill-group { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pill {
+    padding: 9px 16px;
+    border-radius: 20px;
+    border: 1.5px solid var(--light);
+    font-family: -apple-system, sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: #fff;
+    color: var(--text);
+    cursor: pointer;
+  }
+  .pill.selected { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    font-family: -apple-system, sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-primary { background: var(--accent); color: #fff; width: 100%; }
+  .btn-ghost { background: var(--light); color: var(--accent-dark); }
+  .btn-sm { padding: 8px 14px; font-size: 0.78rem; }
+  .btn-block { width: 100%; }
+
+  .list-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--light);
+    font-family: -apple-system, sans-serif;
+  }
+  .list-row:last-child { border-bottom: none; }
+  .list-row-name { font-size: 0.92rem; font-weight: 600; color: var(--text); }
+  .list-row-sub { font-size: 0.75rem; color: #9a8a8c; margin-top: 2px; }
+  .list-row-val { font-size: 0.95rem; font-weight: 700; color: var(--accent-dark); }
+
+  .fab {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-size: 1.8rem;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    cursor: pointer;
+    z-index: 60;
+  }
+
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: #fff;
+    border-top: 1px solid var(--light);
+    display: flex;
+    padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+    z-index: 70;
+  }
+  .nav-item {
+    flex: 1;
+    text-align: center;
+    font-family: -apple-system, sans-serif;
+    font-size: 0.68rem;
+    color: #b0a0a2;
+    cursor: pointer;
+    padding: 4px 0;
+  }
+  .nav-item .nav-icon { font-size: 1.3rem; display: block; margin-bottom: 2px; }
+  .nav-item.active { color: var(--accent); }
+
+  .empty-state { text-align: center; padding: 40px 20px; font-family: -apple-system, sans-serif; color: #b0a0a2; }
+  .empty-state .es-icon { font-size: 2.4rem; margin-bottom: 10px; opacity: 0.6; }
+
+  /* Modal */
+  .modal-bg {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 100;
+    align-items: flex-end;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: var(--bg, #fff);
+    width: 100%;
+    max-height: 88vh;
+    overflow-y: auto;
+    border-radius: 22px 22px 0 0;
+    padding: 20px;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-handle { width: 40px; height: 4px; background: var(--light); border-radius: 4px; margin: 0 auto 16px; }
+  .modal-title { font-size: 1.2rem; font-weight: 400; margin-bottom: 16px; color: var(--text); }
+
+  .toast {
+    position: fixed;
+    bottom: 110px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text, #333);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-family: -apple-system, sans-serif;
+    font-size: 0.82rem;
+    z-index: 200;
+    opacity: 0;
+    transition: opacity 0.3s;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
+
+  .preview-box {
+    background: var(--light);
+    border-radius: 12px;
+    padding: 14px;
+    font-family: -apple-system, sans-serif;
+    font-size: 0.85rem;
+    color: var(--text);
+    white-space: pre-wrap;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    font-family: -apple-system, sans-serif;
+  }
+  .badge-progresso { background: #E3F2E5; color: #2E7D32; }
+  .badge-pausado { background: #FFF3E0; color: #E65100; }
+  .badge-concluido { background: #E3F2FD; color: #1565C0; }
+</style>
+</head>
+<body class="theme-fem">
+
+<!-- ═══════════ LOGIN ═══════════ -->
+<div id="login-screen">
+  <svg class="login-mark" viewBox="0 0 64 64" fill="none">
+    <path d="M8 32 Q 20 16, 32 32 T 56 32" stroke="#B5707A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+    <circle cx="8" cy="32" r="3" fill="#D4A574"/>
+    <circle cx="56" cy="32" r="3" fill="#D4A574"/>
+  </svg>
+  <div class="login-title">Registro de Campo</div>
+  <div class="login-sub">organize seu serviço, seus estudos e seu progresso</div>
+
+  <div class="login-card">
+    <div class="form-group" style="margin-bottom:16px">
+      <label class="sans">Seu nome de usuário</label>
+      <input type="text" id="login-nome" class="login-input" placeholder="Ex: Maria Silva" autocomplete="off">
+    </div>
+
+    <div class="sans" style="font-size:0.78rem;font-weight:600;color:#8a7a7c;margin-bottom:8px">Escolha seu tema</div>
+    <div class="theme-pick">
+      <div class="theme-opt fem selected" id="opt-fem" onclick="selecionarTema('fem')">🌸 Acolhedor</div>
+      <div class="theme-opt masc" id="opt-masc" onclick="selecionarTema('masc')">🌿 Sóbrio</div>
+    </div>
+
+    <button class="btn-login" onclick="entrarOuCriar()">Entrar</button>
+    <div class="login-error" id="login-erro"></div>
+  </div>
+  <div class="sans" style="margin-top:20px;font-size:0.74rem;color:#b0a0a2;cursor:pointer" onclick="abrirLoginAdmin()">Acesso do administrador</div>
+</div>
+
+<!-- ═══════════ APP ═══════════ -->
+<div id="app-screen">
+
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="header-greet">Olá, <span id="user-nome-display"></span></div>
+        <div class="header-user sans" id="user-meta-display"></div>
+      </div>
+      <button class="header-logout" onclick="logout()">Sair</button>
+    </div>
+
+    <div class="meta-bar">
+      <div class="meta-row">
+        <span class="meta-num" id="horas-mes-atual">0h</span>
+        <span class="meta-label">meta: <span id="meta-display">0h</span></span>
+      </div>
+      <div class="meta-bar-track"><div class="meta-bar-fill" id="meta-fill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="campo" onclick="trocarTab('campo')">📋 Campo</div>
+    <div class="tab" data-tab="estudantes" onclick="trocarTab('estudantes')">📖 Estudantes</div>
+    <div class="tab" data-tab="resumo" onclick="trocarTab('resumo')">📊 Resumo</div>
+    <div class="tab" data-tab="config" onclick="trocarTab('config')">⚙️</div>
+  </div>
+
+  <!-- PAGE: CAMPO -->
+  <div class="page active" id="page-campo">
+    <div class="card">
+      <div class="card-title">Meta mensal</div>
+      <div class="pill-group">
+        <div class="pill" data-meta="50" onclick="selecionarMeta(50)">50h</div>
+        <div class="pill" data-meta="90" onclick="selecionarMeta(90)">90h</div>
+        <div class="pill" data-meta="130" onclick="selecionarMeta(130)">130h</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Registrar dia de campo</div>
+      <div class="form-group">
+        <label>Data</label>
+        <input type="date" id="campo-data">
+      </div>
+      <div class="form-group">
+        <label>Horas</label>
+        <div class="pill-group" id="horas-pills">
+          <div class="pill" onclick="selecionarHoras(0.5)">30min</div>
+          <div class="pill" onclick="selecionarHoras(1)">1h</div>
+          <div class="pill" onclick="selecionarHoras(1.5)">1h30</div>
+          <div class="pill" onclick="selecionarHoras(2)">2h</div>
+          <div class="pill" onclick="selecionarHoras(3)">3h</div>
+          <div class="pill" onclick="selecionarHoras(4)">4h</div>
+        </div>
+        <input type="number" id="campo-horas-custom" placeholder="Ou digite outro valor (ex: 2.5)" step="0.5" min="0" style="margin-top:8px">
+      </div>
+      <div class="form-group">
+        <label>Revisitas</label>
+        <input type="number" id="campo-revisitas" placeholder="0" min="0">
+      </div>
+      <div class="form-group">
+        <label>Estudos bíblicos realizados</label>
+        <input type="number" id="campo-estudos" placeholder="0" min="0">
+      </div>
+      <button class="btn btn-primary" onclick="salvarCampo()">Adicionar registro</button>
+      <button class="btn btn-ghost btn-block" style="margin-top:8px" onclick="abrirLembreteCampo()">📅 Criar lembrete de saída</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Este mês</div>
+      <div id="lista-campo"></div>
+    </div>
+  </div>
+
+  <!-- PAGE: ESTUDANTES -->
+  <div class="page" id="page-estudantes">
+    <div class="card">
+      <div class="card-title">Meus estudantes</div>
+      <div id="lista-estudantes"></div>
+    </div>
+  </div>
+
+  <!-- PAGE: RESUMO -->
+  <div class="page" id="page-resumo">
+    <div class="card">
+      <div class="card-title">📲 Enviar relatório mensal</div>
+      <div class="form-group">
+        <label>Enviar para</label>
+        <select id="rel-contato"></select>
+      </div>
+      <div class="form-group">
+        <label>Observação adicional (opcional)</label>
+        <textarea id="rel-obs-extra" placeholder="Algo a mais que queira informar..." oninput="atualizarPreviewRelatorio()"></textarea>
+      </div>
+      <div class="sans" style="font-size:0.76rem;color:#8a7a7c;margin-bottom:10px">Prévia do relatório</div>
+      <div class="preview-box" id="rel-preview"></div>
+      <button class="btn btn-primary btn-block" onclick="enviarRelatorioWA()">📲 Enviar pelo WhatsApp</button>
+      <button class="btn btn-ghost btn-block" style="margin-top:8px" onclick="abrirModalContato()">+ Gerenciar contatos</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Resumo do ano de serviço</div>
+      <div id="resumo-anual"></div>
+    </div>
+  </div>
+
+  <!-- PAGE: CONFIG -->
+  <div class="page" id="page-config">
+    <div class="card">
+      <div class="card-title">Tema visual</div>
+      <div class="theme-pick">
+        <div class="theme-opt fem" id="cfg-opt-fem" onclick="mudarTemaConfig('fem')">🌸 Acolhedor</div>
+        <div class="theme-opt masc" id="cfg-opt-masc" onclick="mudarTemaConfig('masc')">🌿 Sóbrio</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Conta</div>
+      <div class="sans" style="font-size:0.85rem;color:#8a7a7c;margin-bottom:12px">Usuário: <strong id="cfg-user-nome"></strong></div>
+      <button class="btn btn-ghost btn-block" onclick="logout()">Sair da conta</button>
+    </div>
+    <div class="card">
+      <div class="card-title">🔑 Administração</div>
+      <div class="sans" style="font-size:0.8rem;color:#8a7a7c;margin-bottom:12px">Acesso restrito ao ancião designado para gerenciar membros.</div>
+      <button class="btn btn-ghost btn-block" onclick="abrirLoginAdmin()">Abrir painel do administrador</button>
+    </div>
+  </div>
+
+  <button class="fab" id="fab-btn" onclick="abrirFabAction()">+</button>
+
+  <div class="bottom-nav">
+    <div class="nav-item active" data-tab="campo" onclick="trocarTab('campo')"><span class="nav-icon">📋</span>Campo</div>
+    <div class="nav-item" data-tab="estudantes" onclick="trocarTab('estudantes')"><span class="nav-icon">📖</span>Estudantes</div>
+    <div class="nav-item" data-tab="resumo" onclick="trocarTab('resumo')"><span class="nav-icon">📊</span>Resumo</div>
+    <div class="nav-item" data-tab="config" onclick="trocarTab('config')"><span class="nav-icon">⚙️</span>Ajustes</div>
+  </div>
+</div>
+
+<!-- MODAL: NOVO ESTUDANTE -->
+<div class="modal-bg" id="modal-estudante">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-estudante-titulo">📖 Novo Estudante</div>
+    <div class="form-group">
+      <label>Nome</label>
+      <input type="text" id="est-nome" placeholder="Nome do estudante">
+    </div>
+    <div class="form-group">
+      <label>Dia da semana</label>
+      <select id="est-dia">
+        <option value="">Selecione...</option>
+        <option>Segunda-feira</option>
+        <option>Terça-feira</option>
+        <option>Quarta-feira</option>
+        <option>Quinta-feira</option>
+        <option>Sexta-feira</option>
+        <option>Sábado</option>
+        <option>Domingo</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Horário</label>
+      <input type="time" id="est-horario">
+    </div>
+    <div class="form-group">
+      <label>Publicação utilizada</label>
+      <input type="text" id="est-publicacao" placeholder="Ex: Examinemos as Escrituras..." list="lista-publicacoes">
+      <datalist id="lista-publicacoes"></datalist>
+    </div>
+    <div class="form-group">
+      <label>Progresso</label>
+      <select id="est-progresso">
+        <option value="progresso">Em progresso</option>
+        <option value="pausado">Pausado</option>
+        <option value="concluido">Concluído</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Observações</label>
+      <textarea id="est-obs" placeholder="Anotações sobre o estudante..."></textarea>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" onclick="closeModal('modal-estudante')">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1" onclick="salvarEstudante()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: VER ESTUDANTE -->
+<div class="modal-bg" id="modal-ver-estudante">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="ve-titulo">📖 Estudante</div>
+    <div id="ve-body"></div>
+  </div>
+</div>
+
+<!-- MODAL: NOVA VISITA (histórico) -->
+<div class="modal-bg" id="modal-visita">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📝 Registrar Visita</div>
+    <div class="form-group">
+      <label>Data</label>
+      <input type="date" id="vis-data">
+    </div>
+    <div class="form-group">
+      <label>O que foi estudado / observações</label>
+      <textarea id="vis-obs" placeholder="Ex: Estudamos o capítulo 3, ela fez perguntas sobre..."></textarea>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" onclick="closeModal('modal-visita')">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1" onclick="salvarVisita()">Salvar visita</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: LEMBRETE GOOGLE CALENDAR -->
+<div class="modal-bg" id="modal-lembrete">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📅 Revisar lembrete</div>
+    <div class="form-group">
+      <label>Título</label>
+      <input type="text" id="lem-titulo">
+    </div>
+    <div class="form-group">
+      <label>Data</label>
+      <input type="date" id="lem-data">
+    </div>
+    <div class="form-group">
+      <label>Horário</label>
+      <input type="time" id="lem-horario">
+    </div>
+    <div class="form-group">
+      <label>Descrição</label>
+      <textarea id="lem-desc"></textarea>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" onclick="closeModal('modal-lembrete')">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1" onclick="confirmarLembrete()">✅ Confirmar e adicionar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CONTATOS -->
+<div class="modal-bg" id="modal-contato">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">👤 Contatos do relatório</div>
+    <div class="form-group">
+      <label>Nome (ex: Ancião João, Superintendente de Serviço)</label>
+      <input type="text" id="cont-nome" placeholder="Nome / função">
+    </div>
+    <div class="form-group">
+      <label>WhatsApp</label>
+      <input type="tel" id="cont-fone" placeholder="(98) 9XXXX-XXXX">
+    </div>
+    <button class="btn btn-primary btn-block" onclick="salvarContato()">+ Adicionar contato</button>
+    <div style="margin-top:16px" id="lista-contatos"></div>
+    <button class="btn btn-ghost btn-block" style="margin-top:14px" onclick="closeModal('modal-contato')">Fechar</button>
+  </div>
+</div>
+
+<!-- MODAL: LOGIN ADMIN -->
+<div class="modal-bg" id="modal-admin-login">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔑 Acesso do administrador</div>
+    <div id="admin-login-body"></div>
+  </div>
+</div>
+
+<!-- MODAL: PAINEL ADMIN -->
+<div class="modal-bg" id="modal-admin-painel">
+  <div class="modal" style="max-height:92vh">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔑 Painel do Administrador</div>
+    <div id="admin-painel-body"></div>
+    <button class="btn btn-ghost btn-block" style="margin-top:14px" onclick="sairAdmin()">Sair do painel</button>
+  </div>
+</div>
+
+<!-- MODAL: GERAR CONVITE -->
+<div class="modal-bg" id="modal-convite">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✉️ Convidar novo membro</div>
+    <div class="form-group">
+      <label>Nome do novo membro</label>
+      <input type="text" id="conv-nome" placeholder="Nome completo">
+    </div>
+    <div id="conv-link-area"></div>
+    <div style="display:flex;gap:10px;margin-top:10px">
+      <button class="btn btn-ghost" onclick="closeModal('modal-convite')">Fechar</button>
+      <button class="btn btn-primary" style="flex:1" onclick="gerarLinkConvite()">Gerar link</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+// ═══════════ FIREBASE CONFIG ═══════════
+// IMPORTANTE: Para usar este app com sua própria conta, crie um projeto gratuito
+// em https://console.firebase.google.com, ative o Realtime Database, e substitua
+// os valores abaixo pelos da SUA configuração (Project Settings > Web App).
+const firebaseConfig = {
+  apiKey: "AIzaSyD-kSTK1zv4dMZG1FiDI3DKaCAP2IX1_7Q",
+  authDomain: "registro-campo-6cc2a.firebaseapp.com",
+  projectId: "registro-campo-6cc2a",
+  storageBucket: "registro-campo-6cc2a.firebasestorage.app",
+  messagingSenderId: "440039345298",
+  appId: "1:440039345298:web:88e29057f9579f6c984c8b",
+  databaseURL: "https://registro-campo-6cc2a-default-rtdb.firebaseio.com"
+};
+let db = null;
+let firebaseOK = false;
+try {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+  firebaseOK = true;
+} catch(e) {
+  console.log('Firebase não configurado ainda - usando modo local');
+}
+
+const MAX_USUARIOS = 20;
+const ADMIN_KEY = 'pioneiro_admin_config'; // {nome, senha}
+
+// ═══════════ ESTADO ═══════════
+let currentUser = null; // nome de usuário logado
+let isAdminSession = false;
+let userData = {
+  tema: 'fem',
+  meta: 50,
+  registrosCampo: [], // {id, data, horas, revisitas, estudos}
+  estudantes: [],      // {id, nome, dia, horario, publicacao, progresso, obs, historico:[{data,obs}]}
+  publicacoesCustom: [],
+  contatos: []
+};
+let viewingEstId = null;
+let editingEstId = null;
+let lembreteContext = null; // 'campo' ou {tipo:'estudante', id}
+
+// ═══════════ STORAGE HELPERS ═══════════
+function localKey(user) { return 'pioneiro_' + user; }
+
+function saveLocal() {
+  if (!currentUser) return;
+  localStorage.setItem(localKey(currentUser), JSON.stringify(userData));
+}
+
+function saveCloud() {
+  if (!firebaseOK || !currentUser) return;
+  db.ref('usuarios/' + currentUser).set(userData).catch(e => console.log('Erro ao salvar na nuvem', e));
+}
+
+function save() {
+  saveLocal();
+  saveCloud();
+}
+
+// Lista de usuários agora é um objeto: { "nome": {status: 'ativo'|'bloqueado', criadoEm: ts} }
+function loadUserList() {
+  const list = localStorage.getItem('pioneiro_lista_usuarios');
+  return list ? JSON.parse(list) : {};
+}
+function saveUserList(list) {
+  localStorage.setItem('pioneiro_lista_usuarios', JSON.stringify(list));
+  if (firebaseOK) {
+    db.ref('lista_usuarios').set(list).catch(e => console.log('Erro ao salvar lista na nuvem', e));
+  }
+}
+
+function loadAdminConfig() {
+  const c = localStorage.getItem(ADMIN_KEY);
+  return c ? JSON.parse(c) : null;
+}
+function saveAdminConfig(cfg) {
+  localStorage.setItem(ADMIN_KEY, JSON.stringify(cfg));
+  if (firebaseOK) {
+    db.ref('admin_config').set(cfg).catch(e => console.log('Erro ao salvar admin na nuvem', e));
+  }
+}
+
+// ═══════════ TOAST ═══════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ═══════════ LOGIN ═══════════
+let temaSelecionadoLogin = 'fem';
+function selecionarTema(t) {
+  temaSelecionadoLogin = t;
+  document.getElementById('opt-fem').classList.toggle('selected', t === 'fem');
+  document.getElementById('opt-masc').classList.toggle('selected', t === 'masc');
+}
+
+function entrarOuCriar() {
+  const nome = document.getElementById('login-nome').value.trim();
+  const erroEl = document.getElementById('login-erro');
+  erroEl.textContent = '';
+
+  if (!nome) { erroEl.textContent = 'Digite seu nome de usuário'; return; }
+
+  let lista = loadUserList();
+  const chaves = Object.keys(lista);
+  const chaveExistente = chaves.find(u => u.toLowerCase() === nome.toLowerCase());
+
+  if (chaveExistente) {
+    const info = lista[chaveExistente];
+    if (info.status === 'bloqueado') {
+      mostrarTelaBloqueado(chaveExistente);
+      return;
+    }
+    fazerLogin(chaveExistente);
+  } else {
+    if (chaves.length >= MAX_USUARIOS) {
+      erroEl.textContent = 'Limite de ' + MAX_USUARIOS + ' usuários atingido neste app.';
+      return;
+    }
+    lista[nome] = { status: 'ativo', criadoEm: Date.now() };
+    saveUserList(lista);
+    userData = {
+      tema: temaSelecionadoLogin,
+      meta: 50,
+      registrosCampo: [],
+      estudantes: [],
+      publicacoesCustom: [],
+      contatos: []
+    };
+    currentUser = nome;
+    localStorage.setItem('pioneiro_usuario_atual', nome);
+    saveLocal();
+    saveCloud();
+    iniciarApp();
+  }
+}
+
+function mostrarTelaBloqueado(nome) {
+  document.getElementById('login-screen').innerHTML = `
+    <svg class="login-mark" viewBox="0 0 64 64" fill="none">
+      <circle cx="32" cy="32" r="26" stroke="#B5707A" stroke-width="2.5" fill="none"/>
+      <path d="M22 22 L42 42 M42 22 L22 42" stroke="#B5707A" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+    <div class="login-title">Acesso bloqueado</div>
+    <div class="login-sub">O acesso de "${nome}" foi bloqueado pelo administrador.<br>Procure o responsável pela congregação para mais informações.</div>
+    <button class="btn-login" style="max-width:360px" onclick="location.reload()">Voltar</button>
+  `;
+}
+
+function fazerLogin(nome) {
+  currentUser = nome;
+  localStorage.setItem('pioneiro_usuario_atual', nome);
+  const saved = localStorage.getItem(localKey(nome));
+  if (saved) {
+    userData = JSON.parse(saved);
+  }
+  // Tentar sincronizar da nuvem
+  if (firebaseOK) {
+    db.ref('usuarios/' + nome).once('value').then(snap => {
+      const cloudData = snap.val();
+      if (cloudData) {
+        userData = cloudData;
+        saveLocal();
+        renderTudo();
+      }
+    }).catch(e => console.log('Sync error', e));
+  }
+  iniciarApp();
+}
+
+function logout() {
+  currentUser = null;
+  localStorage.removeItem('pioneiro_usuario_atual');
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-nome').value = '';
+}
+
+function iniciarApp() {
+  document.body.className = userData.tema === 'masc' ? 'theme-masc' : 'theme-fem';
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  document.getElementById('user-nome-display').textContent = currentUser;
+  document.getElementById('cfg-user-nome').textContent = currentUser;
+  document.getElementById('campo-data').value = new Date().toISOString().split('T')[0];
+
+  if (!userData.publicacoesCustom) userData.publicacoesCustom = [];
+  if (!userData.contatos) userData.contatos = [];
+
+  selecionarMeta(userData.meta || 50, false);
+  mudarTemaConfig(userData.tema || 'fem', false);
+  renderTudo();
+}
+
+// Auto-login se já tinha sessão
+window.addEventListener('load', () => {
+  const savedUser = localStorage.getItem('pioneiro_usuario_atual');
+  if (savedUser) {
+    const lista = loadUserList();
+    const chaveExistente = Object.keys(lista).find(u => u.toLowerCase() === savedUser.toLowerCase());
+    if (chaveExistente && lista[chaveExistente].status === 'bloqueado') {
+      mostrarTelaBloqueado(chaveExistente);
+      return;
+    }
+    fazerLogin(savedUser);
+  }
+  configurarLinkConvite();
+});
+
+// ═══════════ LINK DE CONVITE ═══════════
+function configurarLinkConvite() {
+  const params = new URLSearchParams(window.location.search);
+  const conviteNome = params.get('convite');
+  if (conviteNome) {
+    document.getElementById('login-nome').value = decodeURIComponent(conviteNome);
+  }
+}
+
+// ═══════════ TABS ═══════════
+function trocarTab(tab) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  document.querySelectorAll('[data-tab="' + tab + '"]').forEach(el => el.classList.add('active'));
+
+  const fab = document.getElementById('fab-btn');
+  fab.style.display = (tab === 'estudantes') ? 'block' : 'none';
+
+  if (tab === 'resumo') {
+    atualizarSelectContatos();
+    atualizarPreviewRelatorio();
+  }
+}
+
+function abrirFabAction() {
+  abrirModalEstudante();
+}
+
+// ═══════════ META ═══════════
+function selecionarMeta(valor, doSave = true) {
+  userData.meta = valor;
+  document.querySelectorAll('.pill[data-meta]').forEach(p => {
+    p.classList.toggle('selected', parseInt(p.dataset.meta) === valor);
+  });
+  document.getElementById('meta-display').textContent = valor + 'h';
+  atualizarBarraMeta();
+  if (doSave) save();
+}
+
+function atualizarBarraMeta() {
+  const horasMes = calcularHorasMesAtual();
+  document.getElementById('horas-mes-atual').textContent = formatHoras(horasMes);
+  const pct = Math.min(100, (horasMes / userData.meta) * 100);
+  document.getElementById('meta-fill').style.width = pct + '%';
+}
+
+function formatHoras(h) {
+  const horas = Math.floor(h);
+  const min = Math.round((h - horas) * 60);
+  return min > 0 ? horas + 'h' + min : horas + 'h';
+}
+
+function mesAtualKey(d = new Date()) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
+
+function calcularHorasMesAtual() {
+  const key = mesAtualKey();
+  return userData.registrosCampo
+    .filter(r => r.data.startsWith(key))
+    .reduce((sum, r) => sum + parseFloat(r.horas || 0), 0);
+}
+
+// ═══════════ CAMPO ═══════════
+let horasSelecionadas = null;
+function selecionarHoras(h) {
+  horasSelecionadas = h;
+  document.getElementById('campo-horas-custom').value = '';
+  document.querySelectorAll('#horas-pills .pill').forEach(p => p.classList.remove('selected'));
+  event.target.classList.add('selected');
+}
+
+function salvarCampo() {
+  const data = document.getElementById('campo-data').value;
+  const customHoras = parseFloat(document.getElementById('campo-horas-custom').value);
+  const horas = !isNaN(customHoras) && customHoras > 0 ? customHoras : horasSelecionadas;
+  const revisitas = parseInt(document.getElementById('campo-revisitas').value) || 0;
+  const estudos = parseInt(document.getElementById('campo-estudos').value) || 0;
+
+  if (!data || !horas) { showToast('Preencha a data e as horas'); return; }
+
+  userData.registrosCampo.push({
+    id: Date.now(),
+    data, horas, revisitas, estudos
+  });
+  save();
+  renderListaCampo();
+  atualizarBarraMeta();
+
+  document.getElementById('campo-horas-custom').value = '';
+  document.getElementById('campo-revisitas').value = '';
+  document.getElementById('campo-estudos').value = '';
+  document.querySelectorAll('#horas-pills .pill').forEach(p => p.classList.remove('selected'));
+  horasSelecionadas = null;
+
+  showToast('✅ Registro adicionado!');
+}
+
+function excluirCampo(id) {
+  userData.registrosCampo = userData.registrosCampo.filter(r => r.id !== id);
+  save();
+  renderListaCampo();
+  atualizarBarraMeta();
+  showToast('Registro removido');
+}
+
+function renderListaCampo() {
+  const key = mesAtualKey();
+  const registros = userData.registrosCampo
+    .filter(r => r.data.startsWith(key))
+    .sort((a, b) => b.data.localeCompare(a.data));
+
+  const el = document.getElementById('lista-campo');
+  if (registros.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="es-icon">📋</div><p>Nenhum registro este mês ainda</p></div>';
+    return;
+  }
+
+  el.innerHTML = registros.map(r => {
+    const d = new Date(r.data + 'T12:00:00');
+    const dataFmt = d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
+    let sub = formatHoras(r.horas);
+    if (r.revisitas) sub += ' · ' + r.revisitas + ' revisita' + (r.revisitas > 1 ? 's' : '');
+    if (r.estudos) sub += ' · ' + r.estudos + ' estudo' + (r.estudos > 1 ? 's' : '');
+    return '<div class="list-row"><div><div class="list-row-name">' + dataFmt + '</div><div class="list-row-sub">' + sub + '</div></div>' +
+      '<button class="btn btn-ghost btn-sm" onclick="excluirCampo(' + r.id + ')">🗑</button></div>';
+  }).join('');
+}
+
+// ═══════════ ESTUDANTES ═══════════
+function abrirModalEstudante() {
+  editingEstId = null;
+  document.getElementById('modal-estudante-titulo').textContent = '📖 Novo Estudante';
+  document.getElementById('est-nome').value = '';
+  document.getElementById('est-dia').value = '';
+  document.getElementById('est-horario').value = '';
+  document.getElementById('est-publicacao').value = '';
+  document.getElementById('est-progresso').value = 'progresso';
+  document.getElementById('est-obs').value = '';
+  atualizarListaPublicacoes();
+  openModal('modal-estudante');
+}
+
+function atualizarListaPublicacoes() {
+  const padrao = ['Boas Notícias de Deus!', 'Examinemos as Escrituras Diariamente', 'O que a Bíblia realmente ensina?', 'Aprenda comigo'];
+  const todas = [...new Set([...padrao, ...userData.publicacoesCustom])];
+  document.getElementById('lista-publicacoes').innerHTML = todas.map(p => '<option value="' + p + '">').join('');
+}
+
+function salvarEstudante() {
+  const nome = document.getElementById('est-nome').value.trim();
+  const dia = document.getElementById('est-dia').value;
+  const horario = document.getElementById('est-horario').value;
+  const publicacao = document.getElementById('est-publicacao').value.trim();
+  const progresso = document.getElementById('est-progresso').value;
+  const obs = document.getElementById('est-obs').value.trim();
+
+  if (!nome) { showToast('Digite o nome do estudante'); return; }
+
+  if (publicacao && !userData.publicacoesCustom.includes(publicacao)) {
+    const padrao = ['Boas Notícias de Deus!', 'Examinemos as Escrituras Diariamente', 'O que a Bíblia realmente ensina?', 'Aprenda comigo'];
+    if (!padrao.includes(publicacao)) userData.publicacoesCustom.push(publicacao);
+  }
+
+  if (editingEstId) {
+    const est = userData.estudantes.find(e => e.id === editingEstId);
+    Object.assign(est, { nome, dia, horario, publicacao, progresso, obs });
+  } else {
+    userData.estudantes.push({
+      id: Date.now(), nome, dia, horario, publicacao, progresso, obs, historico: []
+    });
+  }
+  save();
+  closeModal('modal-estudante');
+  renderListaEstudantes();
+  showToast('✅ Estudante salvo!');
+}
+
+function renderListaEstudantes() {
+  const el = document.getElementById('lista-estudantes');
+  if (userData.estudantes.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="es-icon">📖</div><p>Nenhum estudante cadastrado</p><p style="font-size:0.78rem;margin-top:6px">Toque no botão + para adicionar</p></div>';
+    return;
+  }
+  const badges = { progresso: 'badge-progresso', pausado: 'badge-pausado', concluido: 'badge-concluido' };
+  const labels = { progresso: 'Em progresso', pausado: 'Pausado', concluido: 'Concluído' };
+
+  el.innerHTML = userData.estudantes.map(e => {
+    const diaHorario = (e.dia || '') + (e.horario ? ' · ' + e.horario : '');
+    return '<div class="list-row" style="cursor:pointer" onclick="verEstudante(' + e.id + ')">' +
+      '<div><div class="list-row-name">' + e.nome + '</div><div class="list-row-sub">' + diaHorario + '</div></div>' +
+      '<span class="badge ' + (badges[e.progresso] || 'badge-progresso') + '">' + (labels[e.progresso] || '') + '</span></div>';
+  }).join('');
+}
+
+function verEstudante(id) {
+  viewingEstId = id;
+  const e = userData.estudantes.find(x => x.id === id);
+  if (!e) return;
+
+  const historico = (e.historico || []).slice().reverse();
+  const histHtml = historico.length > 0
+    ? historico.map(h => {
+        const d = new Date(h.data + 'T12:00:00');
+        const dataFmt = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        return '<div style="padding:10px 0;border-bottom:1px solid var(--light)"><div style="font-weight:600;font-size:0.82rem;font-family:-apple-system,sans-serif">' + dataFmt + '</div><div style="font-size:0.8rem;color:#8a7a7c;margin-top:3px;font-family:-apple-system,sans-serif">' + (h.obs || '—') + '</div></div>';
+      }).join('')
+    : '<div style="font-size:0.8rem;color:#b0a0a2;font-family:-apple-system,sans-serif;padding:10px 0">Nenhuma visita registrada ainda</div>';
+
+  document.getElementById('ve-titulo').textContent = '📖 ' + e.nome;
+  document.getElementById('ve-body').innerHTML = `
+    <div style="display:grid;gap:10px">
+      <div class="sans" style="font-size:0.85rem;color:#8a7a7c">${e.dia || '—'} ${e.horario ? '· ' + e.horario : ''}</div>
+      ${e.publicacao ? '<div class="sans" style="font-size:0.85rem"><strong>Publicação:</strong> ' + e.publicacao + '</div>' : ''}
+      ${e.obs ? '<div class="sans" style="font-size:0.82rem;background:var(--light);padding:10px;border-radius:8px">' + e.obs + '</div>' : ''}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+        <button class="btn btn-ghost btn-sm" onclick="editarEstudante(${id})">✏️ Editar</button>
+        <button class="btn btn-ghost btn-sm" onclick="abrirLembreteEstudante(${id})">📅 Lembrete</button>
+        <button class="btn btn-ghost btn-sm" onclick="excluirEstudante(${id})">🗑 Excluir</button>
+      </div>
+      <div style="margin-top:10px">
+        <div class="sans" style="font-size:0.78rem;font-weight:600;color:#8a7a7c;display:flex;justify-content:space-between;align-items:center">
+          <span>HISTÓRICO DE VISITAS</span>
+          <button class="btn btn-primary btn-sm" onclick="abrirModalVisita(${id})">+ Visita</button>
+        </div>
+        <div style="margin-top:8px">${histHtml}</div>
+      </div>
+    </div>`;
+  openModal('modal-ver-estudante');
+}
+
+function editarEstudante(id) {
+  const e = userData.estudantes.find(x => x.id === id);
+  if (!e) return;
+  editingEstId = id;
+  closeModal('modal-ver-estudante');
+  document.getElementById('modal-estudante-titulo').textContent = '✏️ Editar Estudante';
+  document.getElementById('est-nome').value = e.nome;
+  document.getElementById('est-dia').value = e.dia || '';
+  document.getElementById('est-horario').value = e.horario || '';
+  document.getElementById('est-publicacao').value = e.publicacao || '';
+  document.getElementById('est-progresso').value = e.progresso || 'progresso';
+  document.getElementById('est-obs').value = e.obs || '';
+  atualizarListaPublicacoes();
+  openModal('modal-estudante');
+}
+
+function excluirEstudante(id) {
+  userData.estudantes = userData.estudantes.filter(e => e.id !== id);
+  save();
+  closeModal('modal-ver-estudante');
+  renderListaEstudantes();
+  showToast('Estudante removido');
+}
+
+let visitaEstId = null;
+function abrirModalVisita(id) {
+  visitaEstId = id;
+  document.getElementById('vis-data').value = new Date().toISOString().split('T')[0];
+  document.getElementById('vis-obs').value = '';
+  openModal('modal-visita');
+}
+
+function salvarVisita() {
+  const e = userData.estudantes.find(x => x.id === visitaEstId);
+  if (!e) return;
+  const data = document.getElementById('vis-data').value;
+  const obs = document.getElementById('vis-obs').value.trim();
+  if (!data) { showToast('Selecione a data'); return; }
+  if (!e.historico) e.historico = [];
+  e.historico.push({ data, obs });
+  save();
+  closeModal('modal-visita');
+  verEstudante(visitaEstId);
+  showToast('✅ Visita registrada!');
+}
+
+// ═══════════ LEMBRETES GOOGLE CALENDAR ═══════════
+function abrirLembreteEstudante(id) {
+  const e = userData.estudantes.find(x => x.id === id);
+  if (!e) return;
+  closeModal('modal-ver-estudante');
+
+  // Calcular próxima data com base no dia da semana
+  const diasSemana = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+  const idxDia = diasSemana.indexOf(e.dia);
+  let proximaData = new Date();
+  if (idxDia >= 0) {
+    while (proximaData.getDay() !== idxDia) {
+      proximaData.setDate(proximaData.getDate() + 1);
+    }
+  }
+  const dataStr = proximaData.toISOString().split('T')[0];
+
+  document.getElementById('lem-titulo').value = 'Estudo bíblico - ' + e.nome;
+  document.getElementById('lem-data').value = dataStr;
+  document.getElementById('lem-horario').value = e.horario || '19:00';
+  document.getElementById('lem-desc').value = 'Publicação: ' + (e.publicacao || '—');
+  openModal('modal-lembrete');
+}
+
+function abrirLembreteCampo() {
+  document.getElementById('lem-titulo').value = 'Saída de campo';
+  document.getElementById('lem-data').value = new Date().toISOString().split('T')[0];
+  document.getElementById('lem-horario').value = '09:00';
+  document.getElementById('lem-desc').value = 'Pregação - Studio pessoal';
+  openModal('modal-lembrete');
+}
+
+function confirmarLembrete() {
+  const titulo = document.getElementById('lem-titulo').value.trim();
+  const data = document.getElementById('lem-data').value;
+  const horario = document.getElementById('lem-horario').value;
+  const desc = document.getElementById('lem-desc').value.trim();
+
+  if (!titulo || !data || !horario) { showToast('Preencha todos os campos'); return; }
+
+  const startDateTime = data.replace(/-/g,'') + 'T' + horario.replace(':','') + '00';
+  const endDate = new Date(data + 'T' + horario);
+  endDate.setHours(endDate.getHours() + 1);
+  const endDateTime = endDate.toISOString().split('T')[0].replace(/-/g,'') + 'T' + 
+    String(endDate.getHours()).padStart(2,'0') + String(endDate.getMinutes()).padStart(2,'0') + '00';
+
+  const url = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+    '&text=' + encodeURIComponent(titulo) +
+    '&dates=' + startDateTime + '/' + endDateTime +
+    '&details=' + encodeURIComponent(desc);
+
+  window.open(url, '_blank');
+  closeModal('modal-lembrete');
+  showToast('Abrindo Google Calendar...');
+}
+
+// ═══════════ RESUMO ANUAL ═══════════
+function anoServicoKey(date) {
+  // Ano de serviço: setembro a agosto
+  const y = date.getFullYear();
+  const m = date.getMonth(); // 0-11
+  return m >= 8 ? y : y - 1; // setembro=8
+}
+
+function renderResumoAnual() {
+  const hoje = new Date();
+  const anoServ = anoServicoKey(hoje);
+  const meses = [];
+  for (let i = 0; i < 12; i++) {
+    const mIdx = (8 + i) % 12; // começa em setembro (idx 8)
+    const ano = mIdx >= 8 ? anoServ : anoServ + 1;
+    meses.push({ mes: mIdx, ano });
+  }
+
+  const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+  let totalAno = 0;
+  let rows = '';
+  meses.forEach(({mes, ano}) => {
+    const key = ano + '-' + String(mes + 1).padStart(2, '0');
+    const horasMes = userData.registrosCampo.filter(r => r.data.startsWith(key)).reduce((s, r) => s + parseFloat(r.horas||0), 0);
+    totalAno += horasMes;
+    const isFuturo = new Date(ano, mes, 1) > hoje;
+    rows += '<div class="list-row"><span class="list-row-name sans" style="font-weight:500">' + nomesMeses[mes] + ' ' + ano + '</span>' +
+      '<span class="list-row-val" style="color:' + (isFuturo ? '#c0b5b7' : 'var(--accent-dark)') + '">' + (isFuturo ? '—' : formatHoras(horasMes)) + '</span></div>';
+  });
+
+  document.getElementById('resumo-anual').innerHTML =
+    '<div class="sans" style="font-size:0.82rem;color:#8a7a7c;margin-bottom:10px">Ano de serviço ' + anoServ + '/' + (anoServ+1) + ' · Total: <strong>' + formatHoras(totalAno) + '</strong></div>' +
+    rows;
+}
+
+// ═══════════ CONTATOS DO RELATÓRIO ═══════════
+function abrirModalContato() {
+  document.getElementById('cont-nome').value = '';
+  document.getElementById('cont-fone').value = '';
+  renderListaContatos();
+  openModal('modal-contato');
+}
+
+function salvarContato() {
+  const nome = document.getElementById('cont-nome').value.trim();
+  const fone = document.getElementById('cont-fone').value.trim();
+  if (!nome || !fone) { showToast('Preencha nome e WhatsApp'); return; }
+
+  if (!userData.contatos) userData.contatos = [];
+  userData.contatos.push({ id: Date.now(), nome, fone });
+  save();
+  document.getElementById('cont-nome').value = '';
+  document.getElementById('cont-fone').value = '';
+  renderListaContatos();
+  atualizarSelectContatos();
+  showToast('✅ Contato adicionado!');
+}
+
+function excluirContato(id) {
+  userData.contatos = (userData.contatos || []).filter(c => c.id !== id);
+  save();
+  renderListaContatos();
+  atualizarSelectContatos();
+}
+
+function renderListaContatos() {
+  const el = document.getElementById('lista-contatos');
+  const contatos = userData.contatos || [];
+  if (contatos.length === 0) {
+    el.innerHTML = '<div class="sans" style="font-size:0.8rem;color:#b0a0a2;text-align:center;padding:10px">Nenhum contato cadastrado ainda</div>';
+    return;
+  }
+  el.innerHTML = contatos.map(c =>
+    '<div class="list-row"><div><div class="list-row-name">' + c.nome + '</div><div class="list-row-sub">' + c.fone + '</div></div>' +
+    '<button class="btn btn-ghost btn-sm" onclick="excluirContato(' + c.id + ')">🗑</button></div>'
+  ).join('');
+}
+
+function atualizarSelectContatos() {
+  const sel = document.getElementById('rel-contato');
+  const contatos = userData.contatos || [];
+  if (contatos.length === 0) {
+    sel.innerHTML = '<option value="">Nenhum contato cadastrado — toque em "Gerenciar contatos"</option>';
+    return;
+  }
+  sel.innerHTML = contatos.map(c => '<option value="' + c.id + '">' + c.nome + '</option>').join('');
+}
+
+// ═══════════ RELATÓRIO MENSAL COMPLETO ═══════════
+function montarTextoRelatorio() {
+  const horasMes = calcularHorasMesAtual();
+  const key = mesAtualKey();
+  const registrosMes = userData.registrosCampo.filter(r => r.data.startsWith(key));
+  const revisitas = registrosMes.reduce((s,r) => s + (parseInt(r.revisitas)||0), 0);
+  const estudosFeitos = registrosMes.reduce((s,r) => s + (parseInt(r.estudos)||0), 0);
+  const hoje = new Date();
+  const mesNome = hoje.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+  const nomesEstudantes = (userData.estudantes || []).map(e => e.nome);
+  const listaEstudantesTxt = nomesEstudantes.length > 0
+    ? nomesEstudantes.map(n => '• ' + n).join('\n')
+    : '—';
+
+  const obsExtra = document.getElementById('rel-obs-extra').value.trim();
+
+  let msg = `📋 *Relatório de Campo*\n${mesNome.charAt(0).toUpperCase() + mesNome.slice(1)}\n` +
+    `Pioneiro: *${currentUser}*\n\n` +
+    `⏱ Horas: *${formatHoras(horasMes)}* (meta: ${userData.meta}h)\n` +
+    `🔄 Revisitas: *${revisitas}*\n` +
+    `📖 Estudos bíblicos realizados: *${estudosFeitos}*\n\n` +
+    `*Estudantes acompanhados (${nomesEstudantes.length}):*\n${listaEstudantesTxt}`;
+
+  if (obsExtra) {
+    msg += `\n\n*Observações:*\n${obsExtra}`;
+  }
+
+  msg += `\n\n_Enviado via Registro de Campo_`;
+  return msg;
+}
+
+function atualizarPreviewRelatorio() {
+  const el = document.getElementById('rel-preview');
+  if (el) el.textContent = montarTextoRelatorio();
+}
+
+function enviarRelatorioWA() {
+  const contatoId = parseInt(document.getElementById('rel-contato').value);
+  const contato = (userData.contatos || []).find(c => c.id === contatoId);
+
+  if (!contato) {
+    showToast('Cadastre e selecione um contato primeiro');
+    abrirModalContato();
+    return;
+  }
+
+  const msg = montarTextoRelatorio();
+  const foneFmt = contato.fone.replace(/\D/g, '');
+  const url = 'https://wa.me/55' + foneFmt + '?text=' + encodeURIComponent(msg);
+  window.open(url, '_blank');
+}
+
+// ═══════════ CONFIG / TEMA ═══════════
+function mudarTemaConfig(tema, doSave = true) {
+  userData.tema = tema;
+  document.body.className = tema === 'masc' ? 'theme-masc' : 'theme-fem';
+  document.getElementById('cfg-opt-fem').classList.toggle('selected', tema === 'fem');
+  document.getElementById('cfg-opt-masc').classList.toggle('selected', tema === 'masc');
+  if (doSave) save();
+}
+
+// ═══════════ MODAL HELPERS ═══════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ═══════════ ADMINISTRADOR ═══════════
+function abrirLoginAdmin() {
+  const cfg = loadAdminConfig();
+  const body = document.getElementById('admin-login-body');
+
+  if (!cfg) {
+    // Primeira configuração - definir quem é o admin
+    body.innerHTML = `
+      <div class="sans" style="font-size:0.82rem;color:#8a7a7c;margin-bottom:14px">
+        Nenhum administrador configurado ainda. Defina o ancião responsável e crie uma senha.
+      </div>
+      <div class="form-group">
+        <label>Nome do administrador (ancião)</label>
+        <input type="text" id="adm-setup-nome" placeholder="Ex: João Pereira">
+      </div>
+      <div class="form-group">
+        <label>Criar senha</label>
+        <input type="password" id="adm-setup-senha" placeholder="Senha de acesso">
+      </div>
+      <button class="btn btn-primary btn-block" onclick="configurarAdmin()">Definir administrador</button>
+    `;
+  } else {
+    body.innerHTML = `
+      <div class="form-group">
+        <label>Senha do administrador</label>
+        <input type="password" id="adm-login-senha" placeholder="Digite a senha">
+      </div>
+      <button class="btn btn-primary btn-block" onclick="loginAdmin()">Entrar</button>
+      <div class="login-error" id="adm-login-erro"></div>
+    `;
+  }
+  openModal('modal-admin-login');
+}
+
+function configurarAdmin() {
+  const nome = document.getElementById('adm-setup-nome').value.trim();
+  const senha = document.getElementById('adm-setup-senha').value;
+  if (!nome || !senha) { showToast('Preencha nome e senha'); return; }
+
+  saveAdminConfig({ nome, senha });
+  closeModal('modal-admin-login');
+  showToast('✅ Administrador configurado!');
+  abrirPainelAdmin();
+}
+
+function loginAdmin() {
+  const cfg = loadAdminConfig();
+  const senha = document.getElementById('adm-login-senha').value;
+  const erroEl = document.getElementById('adm-login-erro');
+
+  if (senha !== cfg.senha) {
+    erroEl.textContent = 'Senha incorreta';
+    return;
+  }
+  closeModal('modal-admin-login');
+  abrirPainelAdmin();
+}
+
+function sairAdmin() {
+  isAdminSession = false;
+  closeModal('modal-admin-painel');
+}
+
+function abrirPainelAdmin() {
+  isAdminSession = true;
+  renderPainelAdmin();
+  openModal('modal-admin-painel');
+}
+
+function renderPainelAdmin() {
+  const cfg = loadAdminConfig();
+  const lista = loadUserList();
+  const nomes = Object.keys(lista).sort();
+
+  let linhasHtml = nomes.length === 0
+    ? '<div class="sans" style="font-size:0.82rem;color:#b0a0a2;text-align:center;padding:16px">Nenhum membro cadastrado ainda</div>'
+    : nomes.map(nome => {
+        const info = lista[nome];
+        const bloqueado = info.status === 'bloqueado';
+        const dataFmt = info.criadoEm ? new Date(info.criadoEm).toLocaleDateString('pt-BR') : '—';
+        return `
+          <div class="list-row" style="align-items:flex-start">
+            <div>
+              <div class="list-row-name">${nome}</div>
+              <div class="list-row-sub">Desde ${dataFmt} · <span style="color:${bloqueado ? '#E65100' : '#2E7D32'}">${bloqueado ? 'Bloqueado' : 'Ativo'}</span></div>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+              <button class="btn btn-ghost btn-sm" onclick="toggleBloqueioMembro('${nome.replace(/'/g, "\\'")}')">${bloqueado ? '🔓 Desbloquear' : '🔒 Bloquear'}</button>
+              <button class="btn btn-ghost btn-sm" onclick="exportarDadosMembro('${nome.replace(/'/g, "\\'")}')">📤 Exportar</button>
+              <button class="btn btn-ghost btn-sm" onclick="confirmarRemoverMembro('${nome.replace(/'/g, "\\'")}')">🗑 Remover</button>
+            </div>
+          </div>`;
+      }).join('');
+
+  document.getElementById('admin-painel-body').innerHTML = `
+    <div class="sans" style="font-size:0.8rem;color:#8a7a7c;margin-bottom:14px">Administrador: <strong>${cfg.nome}</strong></div>
+    <button class="btn btn-primary btn-block" onclick="abrirModalConviteAdmin()">+ Adicionar / Convidar membro</button>
+    <div class="sans" style="font-size:0.76rem;font-weight:600;color:#8a7a7c;margin:16px 0 6px">MEMBROS (${nomes.length}/${MAX_USUARIOS})</div>
+    <div>${linhasHtml}</div>
+  `;
+}
+
+function toggleBloqueioMembro(nome) {
+  const lista = loadUserList();
+  if (!lista[nome]) return;
+  lista[nome].status = lista[nome].status === 'bloqueado' ? 'ativo' : 'bloqueado';
+  saveUserList(lista);
+  renderPainelAdmin();
+  showToast(lista[nome].status === 'bloqueado' ? '🔒 Membro bloqueado' : '🔓 Membro desbloqueado');
+}
+
+function exportarDadosMembro(nome) {
+  const dados = localStorage.getItem(localKey(nome));
+  if (!dados) {
+    showToast('Sem dados locais deste membro neste aparelho');
+    return;
+  }
+  const blob = new Blob([dados], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'dados_' + nome.replace(/\s+/g, '_') + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('📤 Dados exportados!');
+}
+
+let membroParaRemover = null;
+function confirmarRemoverMembro(nome) {
+  membroParaRemover = nome;
+  const confirmado = confirm('⚠️ ATENÇÃO\n\nAntes de remover "' + nome + '", certifique-se de ter exportado os dados dele (botão Exportar).\n\nEsta ação não pode ser desfeita. Deseja realmente remover este membro?');
+  if (confirmado) {
+    removerMembro(nome);
+  }
+}
+
+function removerMembro(nome) {
+  const lista = loadUserList();
+  delete lista[nome];
+  saveUserList(lista);
+  localStorage.removeItem(localKey(nome));
+  if (firebaseOK) {
+    db.ref('usuarios/' + nome).remove().catch(e => console.log(e));
+  }
+  renderPainelAdmin();
+  showToast('Membro removido');
+}
+
+function abrirModalConviteAdmin() {
+  document.getElementById('conv-nome').value = '';
+  document.getElementById('conv-link-area').innerHTML = '';
+  openModal('modal-convite');
+}
+
+function gerarLinkConvite() {
+  const nome = document.getElementById('conv-nome').value.trim();
+  if (!nome) { showToast('Digite o nome do novo membro'); return; }
+
+  const lista = loadUserList();
+  const jaExiste = Object.keys(lista).find(u => u.toLowerCase() === nome.toLowerCase());
+  if (jaExiste) { showToast('Já existe um membro com esse nome'); return; }
+
+  if (Object.keys(lista).length >= MAX_USUARIOS) {
+    showToast('Limite de ' + MAX_USUARIOS + ' membros atingido');
+    return;
+  }
+
+  // Pré-cadastra como ativo (a pessoa só precisa abrir o link e definir o tema)
+  lista[nome] = { status: 'ativo', criadoEm: Date.now() };
+  saveUserList(lista);
+
+  const baseUrl = window.location.origin + window.location.pathname;
+  const link = baseUrl + '?convite=' + encodeURIComponent(nome);
+
+  document.getElementById('conv-link-area').innerHTML = `
+    <div class="preview-box">${link}</div>
+    <button class="btn btn-ghost btn-block" onclick="copiarLink('${link.replace(/'/g, "\\'")}')">📋 Copiar link</button>
+    <div class="sans" style="font-size:0.76rem;color:#8a7a7c;margin-top:8px">Envie este link para ${nome} pelo WhatsApp. Ao abrir, o nome já estará preenchido — é só escolher o tema e entrar.</div>
+  `;
+  renderPainelAdmin();
+}
+
+function copiarLink(link) {
+  navigator.clipboard.writeText(link).then(() => showToast('🔗 Link copiado!'));
+}
+
+
+function renderTudo() {
+  renderListaCampo();
+  renderListaEstudantes();
+  renderResumoAnual();
+  atualizarBarraMeta();
+}
+</script>
+</body>
+</html>
