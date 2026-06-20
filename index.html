@@ -1361,18 +1361,14 @@ function montarTextoRelatorio() {
   const hoje = new Date();
   const mesNome = hoje.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
-  const nomesEstudantes = (userData.estudantes || []).map(e => e.nome);
-  const listaEstudantesTxt = nomesEstudantes.length > 0
-    ? nomesEstudantes.map(n => '• ' + n).join('\n')
-    : '—';
+  const totalEstudantes = (userData.estudantes || []).length;
 
   const obsExtra = document.getElementById('rel-obs-extra').value.trim();
 
   let msg = `📋 *Relatório de Campo*\n${mesNome.charAt(0).toUpperCase() + mesNome.slice(1)}\n` +
     `Pioneiro: *${currentUser}*\n\n` +
-    `⏱ Horas: *${formatHoras(horasMes)}* (meta: ${userData.meta}h)\n` +
-    `📖 Estudos bíblicos: *${nomesEstudantes.length}*\n\n` +
-    `*Estudantes acompanhados (${nomesEstudantes.length}):*\n${listaEstudantesTxt}`;
+    `⏱ Horas: *${formatHoras(horasMes)}*\n` +
+    `📖 Estudos bíblicos: *${totalEstudantes}*`;
 
   if (obsExtra) {
     msg += `\n\n*Observações:*\n${obsExtra}`;
