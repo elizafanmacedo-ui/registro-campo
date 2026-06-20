@@ -474,14 +474,6 @@
         </div>
         <input type="number" id="campo-horas-custom" placeholder="Ou digite outro valor (ex: 2.5)" step="0.5" min="0" style="margin-top:8px">
       </div>
-      <div class="form-group">
-        <label>Revisitas</label>
-        <input type="number" id="campo-revisitas" placeholder="0" min="0">
-      </div>
-      <div class="form-group">
-        <label>Estudos bíblicos realizados</label>
-        <input type="number" id="campo-estudos" placeholder="0" min="0">
-      </div>
       <button class="btn btn-primary" onclick="salvarCampo()">Adicionar registro</button>
       <button class="btn btn-ghost btn-block" style="margin-top:8px" onclick="abrirLembreteCampo()">📅 Criar lembrete de saída</button>
     </div>
@@ -754,7 +746,7 @@ let isAdminSession = false;
 let userData = {
   tema: 'fem',
   meta: 50,
-  registrosCampo: [], // {id, data, horas, revisitas, estudos}
+  registrosCampo: [], // {id, data, horas}
   estudantes: [],      // {id, nome, dia, horario, publicacao, progresso, obs, historico:[{data,obs}]}
   publicacoesCustom: [],
   contatos: []
@@ -1023,22 +1015,18 @@ function salvarCampo() {
   const data = document.getElementById('campo-data').value;
   const customHoras = parseFloat(document.getElementById('campo-horas-custom').value);
   const horas = !isNaN(customHoras) && customHoras > 0 ? customHoras : horasSelecionadas;
-  const revisitas = parseInt(document.getElementById('campo-revisitas').value) || 0;
-  const estudos = parseInt(document.getElementById('campo-estudos').value) || 0;
 
   if (!data || !horas) { showToast('Preencha a data e as horas'); return; }
 
   userData.registrosCampo.push({
     id: Date.now(),
-    data, horas, revisitas, estudos
+    data, horas
   });
   save();
   renderListaCampo();
   atualizarBarraMeta();
 
   document.getElementById('campo-horas-custom').value = '';
-  document.getElementById('campo-revisitas').value = '';
-  document.getElementById('campo-estudos').value = '';
   document.querySelectorAll('#horas-pills .pill').forEach(p => p.classList.remove('selected'));
   horasSelecionadas = null;
 
@@ -1068,9 +1056,7 @@ function renderListaCampo() {
   el.innerHTML = registros.map(r => {
     const d = new Date(r.data + 'T12:00:00');
     const dataFmt = d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
-    let sub = formatHoras(r.horas);
-    if (r.revisitas) sub += ' · ' + r.revisitas + ' revisita' + (r.revisitas > 1 ? 's' : '');
-    if (r.estudos) sub += ' · ' + r.estudos + ' estudo' + (r.estudos > 1 ? 's' : '');
+    const sub = formatHoras(r.horas);
     return '<div class="list-row"><div><div class="list-row-name">' + dataFmt + '</div><div class="list-row-sub">' + sub + '</div></div>' +
       '<button class="btn btn-ghost btn-sm" onclick="excluirCampo(' + r.id + ')">🗑</button></div>';
   }).join('');
@@ -1372,10 +1358,6 @@ function atualizarSelectContatos() {
 // ═══════════ RELATÓRIO MENSAL COMPLETO ═══════════
 function montarTextoRelatorio() {
   const horasMes = calcularHorasMesAtual();
-  const key = mesAtualKey();
-  const registrosMes = userData.registrosCampo.filter(r => r.data.startsWith(key));
-  const revisitas = registrosMes.reduce((s,r) => s + (parseInt(r.revisitas)||0), 0);
-  const estudosFeitos = registrosMes.reduce((s,r) => s + (parseInt(r.estudos)||0), 0);
   const hoje = new Date();
   const mesNome = hoje.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
@@ -1389,8 +1371,7 @@ function montarTextoRelatorio() {
   let msg = `📋 *Relatório de Campo*\n${mesNome.charAt(0).toUpperCase() + mesNome.slice(1)}\n` +
     `Pioneiro: *${currentUser}*\n\n` +
     `⏱ Horas: *${formatHoras(horasMes)}* (meta: ${userData.meta}h)\n` +
-    `🔄 Revisitas: *${revisitas}*\n` +
-    `📖 Estudos bíblicos realizados: *${estudosFeitos}*\n\n` +
+    `📖 Estudos bíblicos: *${nomesEstudantes.length}*\n\n` +
     `*Estudantes acompanhados (${nomesEstudantes.length}):*\n${listaEstudantesTxt}`;
 
   if (obsExtra) {
