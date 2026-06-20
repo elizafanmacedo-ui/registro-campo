@@ -465,12 +465,12 @@
       <div class="form-group">
         <label>Horas</label>
         <div class="pill-group" id="horas-pills">
-          <div class="pill" onclick="selecionarHoras(0.5)">30min</div>
-          <div class="pill" onclick="selecionarHoras(1)">1h</div>
-          <div class="pill" onclick="selecionarHoras(1.5)">1h30</div>
-          <div class="pill" onclick="selecionarHoras(2)">2h</div>
-          <div class="pill" onclick="selecionarHoras(3)">3h</div>
-          <div class="pill" onclick="selecionarHoras(4)">4h</div>
+          <div class="pill" onclick="selecionarHoras(0.5, this)">30min</div>
+          <div class="pill" onclick="selecionarHoras(1, this)">1h</div>
+          <div class="pill" onclick="selecionarHoras(1.5, this)">1h30</div>
+          <div class="pill" onclick="selecionarHoras(2, this)">2h</div>
+          <div class="pill" onclick="selecionarHoras(3, this)">3h</div>
+          <div class="pill" onclick="selecionarHoras(4, this)">4h</div>
         </div>
         <input type="number" id="campo-horas-custom" placeholder="Ou digite outro valor (ex: 2.5)" step="0.5" min="0" style="margin-top:8px">
       </div>
@@ -873,6 +873,15 @@ function mostrarTelaBloqueado(nome) {
   `;
 }
 
+function garantirCamposUserData() {
+  if (!userData.publicacoesCustom) userData.publicacoesCustom = [];
+  if (!userData.contatos) userData.contatos = [];
+  if (!userData.registrosCampo) userData.registrosCampo = [];
+  if (!userData.estudantes) userData.estudantes = [];
+  if (!userData.meta) userData.meta = 50;
+  if (!userData.tema) userData.tema = 'fem';
+}
+
 function fazerLogin(nome) {
   currentUser = nome;
   localStorage.setItem('pioneiro_usuario_atual', nome);
@@ -880,13 +889,17 @@ function fazerLogin(nome) {
   if (saved) {
     userData = JSON.parse(saved);
   }
+  garantirCamposUserData();
   // Tentar sincronizar da nuvem
   if (firebaseOK) {
     db.ref('usuarios/' + nome).once('value').then(snap => {
       const cloudData = snap.val();
       if (cloudData) {
         userData = cloudData;
+        garantirCamposUserData();
         saveLocal();
+        selecionarMeta(userData.meta, false);
+        mudarTemaConfig(userData.tema, false);
         renderTudo();
       }
     }).catch(e => console.log('Sync error', e));
@@ -910,8 +923,7 @@ function iniciarApp() {
   document.getElementById('cfg-user-nome').textContent = currentUser;
   document.getElementById('campo-data').value = new Date().toISOString().split('T')[0];
 
-  if (!userData.publicacoesCustom) userData.publicacoesCustom = [];
-  if (!userData.contatos) userData.contatos = [];
+  garantirCamposUserData();
 
   selecionarMeta(userData.meta || 50, false);
   mudarTemaConfig(userData.tema || 'fem', false);
@@ -1000,11 +1012,11 @@ function calcularHorasMesAtual() {
 
 // ═══════════ CAMPO ═══════════
 let horasSelecionadas = null;
-function selecionarHoras(h) {
+function selecionarHoras(h, el) {
   horasSelecionadas = h;
   document.getElementById('campo-horas-custom').value = '';
   document.querySelectorAll('#horas-pills .pill').forEach(p => p.classList.remove('selected'));
-  event.target.classList.add('selected');
+  if (el) el.classList.add('selected');
 }
 
 function salvarCampo() {
