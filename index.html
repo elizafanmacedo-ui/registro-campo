@@ -918,17 +918,12 @@ function iniciarApp() {
   renderTudo();
 }
 
-// Auto-login se já tinha sessão
+// Sempre mostra a tela de login. Se já tinha sessão, pré-preenche o nome.
 window.addEventListener('load', () => {
   const savedUser = localStorage.getItem('pioneiro_usuario_atual');
   if (savedUser) {
-    const lista = loadUserList();
-    const chaveExistente = Object.keys(lista).find(u => u.toLowerCase() === savedUser.toLowerCase());
-    if (chaveExistente && lista[chaveExistente].status === 'bloqueado') {
-      mostrarTelaBloqueado(chaveExistente);
-      return;
-    }
-    fazerLogin(savedUser);
+    const input = document.getElementById('login-nome');
+    if (input) input.value = savedUser;
   }
   configurarLinkConvite();
 });
