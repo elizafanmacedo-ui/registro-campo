@@ -845,7 +845,7 @@ function entrarOuCriar() {
       contatos: []
     };
     currentUser = nome;
-    localStorage.setItem('pioneiro_usuario_atual', nome);
+    localStorage.setItem('pioneiro_usuario_v2', nome);
     saveLocal();
     saveCloud();
     iniciarApp();
@@ -875,7 +875,7 @@ function garantirCamposUserData() {
 
 function fazerLogin(nome) {
   currentUser = nome;
-  localStorage.setItem('pioneiro_usuario_atual', nome);
+  localStorage.setItem('pioneiro_usuario_v2', nome);
   const saved = localStorage.getItem(localKey(nome));
   if (saved) {
     userData = JSON.parse(saved);
@@ -900,7 +900,7 @@ function fazerLogin(nome) {
 
 function logout() {
   currentUser = null;
-  localStorage.removeItem('pioneiro_usuario_atual');
+  localStorage.removeItem('pioneiro_usuario_v2');
   document.getElementById('app-screen').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('login-nome').value = '';
@@ -934,7 +934,7 @@ function iniciarApp() {
 
   // Sempre mostra a tela de login. Se já tinha sessão, pré-preenche o nome.
 window.addEventListener('load', () => {
-  const savedUser = localStorage.getItem('pioneiro_usuario_atual');
+  const savedUser = localStorage.getItem('pioneiro_usuario_v2');
   if (savedUser) {
     const input = document.getElementById('login-nome');
     if (input) input.value = savedUser;
