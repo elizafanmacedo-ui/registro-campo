@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Registro de Campo</title>
 <style>
   :root {
@@ -918,7 +921,18 @@ function iniciarApp() {
   renderTudo();
 }
 
-// Sempre mostra a tela de login. Se já tinha sessão, pré-preenche o nome.
+// Força atualização: se não tiver parâmetro de versão na URL, recarrega com ele
+(function() {
+  const VERSAO = '20260622';
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('v') !== VERSAO) {
+    params.set('v', VERSAO);
+    const novaUrl = window.location.pathname + '?' + params.toString();
+    window.location.replace(novaUrl);
+  }
+})();
+
+  // Sempre mostra a tela de login. Se já tinha sessão, pré-preenche o nome.
 window.addEventListener('load', () => {
   const savedUser = localStorage.getItem('pioneiro_usuario_atual');
   if (savedUser) {
