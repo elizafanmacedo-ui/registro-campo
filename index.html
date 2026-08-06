@@ -440,6 +440,7 @@
   <div class="tabs">
     <div class="tab active" data-tab="campo" onclick="trocarTab('campo')">📋 Campo</div>
     <div class="tab" data-tab="estudantes" onclick="trocarTab('estudantes')">📖 Estudantes</div>
+    <div class="tab" data-tab="pessoas" onclick="trocarTab('pessoas')">🏠 Pessoas</div>
     <div class="tab" data-tab="resumo" onclick="trocarTab('resumo')">📊 Resumo</div>
     <div class="tab" data-tab="config" onclick="trocarTab('config')">⚙️</div>
   </div>
@@ -488,6 +489,17 @@
     <div class="card">
       <div class="card-title">Meus estudantes</div>
       <div id="lista-estudantes"></div>
+    </div>
+  </div>
+
+  <!-- PAGE: PESSOAS -->
+  <div class="page" id="page-pessoas">
+    <div class="card">
+      <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+        <span>🏠 Pessoas de interesse</span>
+        <button class="btn btn-primary btn-sm" onclick="abrirModalPessoa()">+ Nova</button>
+      </div>
+      <div id="lista-pessoas"></div>
     </div>
   </div>
 
@@ -541,8 +553,75 @@
   <div class="bottom-nav">
     <div class="nav-item active" data-tab="campo" onclick="trocarTab('campo')"><span class="nav-icon">📋</span>Campo</div>
     <div class="nav-item" data-tab="estudantes" onclick="trocarTab('estudantes')"><span class="nav-icon">📖</span>Estudantes</div>
+    <div class="nav-item" data-tab="pessoas" onclick="trocarTab('pessoas')"><span class="nav-icon">🏠</span>Pessoas</div>
     <div class="nav-item" data-tab="resumo" onclick="trocarTab('resumo')"><span class="nav-icon">📊</span>Resumo</div>
     <div class="nav-item" data-tab="config" onclick="trocarTab('config')"><span class="nav-icon">⚙️</span>Ajustes</div>
+  </div>
+</div>
+
+<!-- MODAL: NOVA PESSOA -->
+<div class="modal-bg" id="modal-pessoa">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-pessoa-titulo">🏠 Nova Pessoa</div>
+    <div class="form-group">
+      <label>Nome</label>
+      <input type="text" id="pes-nome" placeholder="Nome da pessoa">
+    </div>
+    <div class="form-group">
+      <label>Endereço</label>
+      <input type="text" id="pes-endereco" placeholder="Rua, número, bairro">
+    </div>
+    <div class="form-group">
+      <label>Interesse</label>
+      <select id="pes-interesse">
+        <option value="alto">🔥 Alto interesse</option>
+        <option value="medio">🙂 Interesse médio</option>
+        <option value="baixo">😐 Baixo interesse</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Observações</label>
+      <textarea id="pes-obs" placeholder="Anotações sobre a pessoa..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Lembrete de revisita (dias)</label>
+      <input type="number" id="pes-dias-lembrete" placeholder="Ex: 14" min="1" max="365">
+      <div class="sans" style="font-size:0.75rem;color:#8a7a7c;margin-top:4px">Após cada revisita, criar lembrete no Google Calendar para este prazo</div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" onclick="closeModal('modal-pessoa')">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1" onclick="salvarPessoa()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: VER PESSOA -->
+<div class="modal-bg" id="modal-ver-pessoa">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="vp-titulo">🏠 Pessoa</div>
+    <div id="vp-body"></div>
+  </div>
+</div>
+
+<!-- MODAL: NOVA REVISITA -->
+<div class="modal-bg" id="modal-revisita">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔄 Registrar Revisita</div>
+    <div class="form-group">
+      <label>Data</label>
+      <input type="date" id="rev-data">
+    </div>
+    <div class="form-group">
+      <label>Observações</label>
+      <textarea id="rev-obs" placeholder="O que foi conversado, reações..."></textarea>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" onclick="closeModal('modal-revisita')">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1" onclick="salvarRevisita()">Salvar</button>
+    </div>
   </div>
 </div>
 
@@ -747,6 +826,7 @@ let userData = {
   meta: 50,
   registrosCampo: [], // {id, data, horas}
   estudantes: [],      // {id, nome, dia, horario, publicacao, progresso, obs, historico:[{data,obs}]}
+  pessoas: [],         // {id, nome, endereco, interesse, obs, diasLembrete, historico:[{data,obs}]}
   publicacoesCustom: [],
   contatos: []
 };
@@ -841,6 +921,7 @@ function entrarOuCriar() {
       meta: 50,
       registrosCampo: [],
       estudantes: [],
+      pessoas: [],
       publicacoesCustom: [],
       contatos: []
     };
@@ -869,6 +950,7 @@ function garantirCamposUserData() {
   if (!userData.contatos) userData.contatos = [];
   if (!userData.registrosCampo) userData.registrosCampo = [];
   if (!userData.estudantes) userData.estudantes = [];
+  if (!userData.pessoas) userData.pessoas = [];
   if (!userData.meta) userData.meta = 50;
   if (!userData.tema) userData.tema = 'fem';
 }
@@ -960,7 +1042,8 @@ function trocarTab(tab) {
   document.querySelectorAll('[data-tab="' + tab + '"]').forEach(el => el.classList.add('active'));
 
   const fab = document.getElementById('fab-btn');
-  fab.style.display = (tab === 'estudantes') ? 'block' : 'none';
+  fab.style.display = (tab === 'estudantes' || tab === 'pessoas') ? 'block' : 'none';
+  if (tab === 'pessoas') renderListaPessoas();
 
   if (tab === 'resumo') {
     atualizarSelectContatos();
@@ -969,7 +1052,12 @@ function trocarTab(tab) {
 }
 
 function abrirFabAction() {
-  abrirModalEstudante();
+  const abaAtiva = document.querySelector('.tab.active');
+  if (abaAtiva && abaAtiva.dataset.tab === 'pessoas') {
+    abrirModalPessoa();
+  } else {
+    abrirModalEstudante();
+  }
 }
 
 // ═══════════ META ═══════════
@@ -1603,9 +1691,200 @@ function copiarLink(link) {
 }
 
 
+// ═══════════ PESSOAS / REVISITAS ═══════════
+let editingPesId = null;
+let revisitaPesId = null;
+
+const interesseLabel = { alto: '🔥 Alto', medio: '🙂 Médio', baixo: '😐 Baixo' };
+const interesseCor = { alto: '#c62828', medio: '#e65100', baixo: '#546e7a' };
+
+function diasDesde(dataStr) {
+  if (!dataStr) return null;
+  const d = new Date(dataStr + 'T12:00:00');
+  const hoje = new Date();
+  hoje.setHours(12,0,0,0);
+  return Math.floor((hoje - d) / 86400000);
+}
+
+function ultimaRevisita(pessoa) {
+  if (!pessoa.historico || pessoa.historico.length === 0) return null;
+  return pessoa.historico.slice().sort((a,b) => b.data.localeCompare(a.data))[0];
+}
+
+function abrirModalPessoa() {
+  editingPesId = null;
+  document.getElementById('modal-pessoa-titulo').textContent = '🏠 Nova Pessoa';
+  document.getElementById('pes-nome').value = '';
+  document.getElementById('pes-endereco').value = '';
+  document.getElementById('pes-interesse').value = 'alto';
+  document.getElementById('pes-obs').value = '';
+  document.getElementById('pes-dias-lembrete').value = '';
+  openModal('modal-pessoa');
+}
+
+function salvarPessoa() {
+  const nome = document.getElementById('pes-nome').value.trim();
+  if (!nome) { showToast('Digite o nome da pessoa'); return; }
+
+  const dados = {
+    nome,
+    endereco: document.getElementById('pes-endereco').value.trim(),
+    interesse: document.getElementById('pes-interesse').value,
+    obs: document.getElementById('pes-obs').value.trim(),
+    diasLembrete: parseInt(document.getElementById('pes-dias-lembrete').value) || null
+  };
+
+  if (editingPesId) {
+    const p = userData.pessoas.find(x => x.id === editingPesId);
+    Object.assign(p, dados);
+  } else {
+    userData.pessoas.push({ id: Date.now(), historico: [], ...dados });
+  }
+  save();
+  closeModal('modal-pessoa');
+  renderListaPessoas();
+  showToast('✅ Pessoa salva!');
+}
+
+function renderListaPessoas() {
+  const el = document.getElementById('lista-pessoas');
+  if (!userData.pessoas || userData.pessoas.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="es-icon">🏠</div><p>Nenhuma pessoa cadastrada</p><p style="font-size:0.78rem;margin-top:6px">Toque no botão + para adicionar</p></div>';
+    return;
+  }
+
+  // Ordena por mais dias sem revisita (sem histórico vai primeiro)
+  const ordenadas = userData.pessoas.slice().sort((a, b) => {
+    const ua = ultimaRevisita(a);
+    const ub = ultimaRevisita(b);
+    const da = ua ? diasDesde(ua.data) : 99999;
+    const db = ub ? diasDesde(ub.data) : 99999;
+    return db - da;
+  });
+
+  el.innerHTML = ordenadas.map(p => {
+    const ultima = ultimaRevisita(p);
+    const dias = ultima ? diasDesde(ultima.data) : null;
+    const diasLabel = dias === null ? '<span style="color:#b0a0a2;font-size:0.75rem">Nunca visitada</span>'
+      : dias === 0 ? '<span style="color:#2e7d32;font-size:0.75rem">Visitada hoje</span>'
+      : '<span style="font-size:0.75rem;color:' + (dias > (p.diasLembrete || 30) ? '#c62828' : '#546e7a') + '">' + dias + ' dias sem visita</span>';
+
+    return '<div class="list-row" style="cursor:pointer;align-items:flex-start" onclick="verPessoa(' + p.id + ')">' +
+      '<div style="flex:1">' +
+        '<div class="list-row-name">' + p.nome + '</div>' +
+        '<div class="list-row-sub">' + (p.endereco || '—') + '</div>' +
+        '<div style="margin-top:3px">' + diasLabel + '</div>' +
+      '</div>' +
+      '<span style="font-size:0.72rem;color:' + (interesseCor[p.interesse] || '#546e7a') + ';margin-top:2px">' + (interesseLabel[p.interesse] || '') + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+function verPessoa(id) {
+  const p = userData.pessoas.find(x => x.id === id);
+  if (!p) return;
+
+  const historico = (p.historico || []).slice().sort((a,b) => b.data.localeCompare(a.data));
+  const histHtml = historico.length > 0
+    ? historico.map(h => {
+        const d = new Date(h.data + 'T12:00:00');
+        const dataFmt = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        return '<div style="padding:10px 0;border-bottom:1px solid var(--light)">' +
+          '<div style="font-weight:600;font-size:0.82rem;font-family:-apple-system,sans-serif">' + dataFmt + '</div>' +
+          '<div style="font-size:0.8rem;color:#8a7a7c;margin-top:3px;font-family:-apple-system,sans-serif">' + (h.obs || '—') + '</div>' +
+        '</div>';
+      }).join('')
+    : '<div style="font-size:0.8rem;color:#b0a0a2;font-family:-apple-system,sans-serif;padding:10px 0">Nenhuma visita registrada ainda</div>';
+
+  const ultima = ultimaRevisita(p);
+  const dias = ultima ? diasDesde(ultima.data) : null;
+  const diasInfo = dias === null ? 'Nunca visitada'
+    : dias === 0 ? 'Visitada hoje'
+    : dias + ' dias desde a última visita';
+
+  document.getElementById('vp-titulo').textContent = '🏠 ' + p.nome;
+  document.getElementById('vp-body').innerHTML = `
+    <div style="display:grid;gap:10px">
+      <div class="sans" style="font-size:0.85rem;color:#8a7a7c">${p.endereco || '—'}</div>
+      <div class="sans" style="font-size:0.85rem">Interesse: <strong style="color:${interesseCor[p.interesse]}">${interesseLabel[p.interesse]}</strong></div>
+      <div class="sans" style="font-size:0.82rem;color:#546e7a">⏱ ${diasInfo}</div>
+      ${p.diasLembrete ? '<div class="sans" style="font-size:0.82rem;color:#8a7a7c">🔔 Lembrete programado: a cada <strong>' + p.diasLembrete + ' dias</strong></div>' : ''}
+      ${p.obs ? '<div class="sans" style="font-size:0.82rem;background:var(--light);padding:10px;border-radius:8px">' + p.obs + '</div>' : ''}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+        <button class="btn btn-ghost btn-sm" onclick="editarPessoa(${p.id})">✏️ Editar</button>
+        <button class="btn btn-ghost btn-sm" onclick="abrirModalRevisita(${p.id})">🔄 Revisita</button>
+        <button class="btn btn-ghost btn-sm" onclick="excluirPessoa(${p.id})">🗑 Excluir</button>
+      </div>
+      <div style="margin-top:10px">
+        <div class="sans" style="font-size:0.78rem;font-weight:600;color:#8a7a7c">HISTÓRICO DE VISITAS</div>
+        <div style="margin-top:8px">${histHtml}</div>
+      </div>
+    </div>`;
+  openModal('modal-ver-pessoa');
+}
+
+function editarPessoa(id) {
+  const p = userData.pessoas.find(x => x.id === id);
+  if (!p) return;
+  editingPesId = id;
+  closeModal('modal-ver-pessoa');
+  document.getElementById('modal-pessoa-titulo').textContent = '✏️ Editar Pessoa';
+  document.getElementById('pes-nome').value = p.nome;
+  document.getElementById('pes-endereco').value = p.endereco || '';
+  document.getElementById('pes-interesse').value = p.interesse || 'medio';
+  document.getElementById('pes-obs').value = p.obs || '';
+  document.getElementById('pes-dias-lembrete').value = p.diasLembrete || '';
+  openModal('modal-pessoa');
+}
+
+function excluirPessoa(id) {
+  userData.pessoas = userData.pessoas.filter(x => x.id !== id);
+  save();
+  closeModal('modal-ver-pessoa');
+  renderListaPessoas();
+  showToast('Pessoa removida');
+}
+
+function abrirModalRevisita(id) {
+  revisitaPesId = id;
+  document.getElementById('rev-data').value = new Date().toISOString().split('T')[0];
+  document.getElementById('rev-obs').value = '';
+  openModal('modal-revisita');
+}
+
+function salvarRevisita() {
+  const p = userData.pessoas.find(x => x.id === revisitaPesId);
+  if (!p) return;
+  const data = document.getElementById('rev-data').value;
+  const obs = document.getElementById('rev-obs').value.trim();
+  if (!data) { showToast('Selecione a data'); return; }
+
+  if (!p.historico) p.historico = [];
+  p.historico.push({ data, obs });
+  save();
+  closeModal('modal-revisita');
+
+  // Se tem lembrete programado, abre Google Calendar
+  if (p.diasLembrete) {
+    const proxData = new Date(data + 'T12:00:00');
+    proxData.setDate(proxData.getDate() + p.diasLembrete);
+    const proxStr = proxData.toISOString().split('T')[0];
+
+    document.getElementById('lem-titulo').value = 'Revisitar ' + p.nome;
+    document.getElementById('lem-data').value = proxStr;
+    document.getElementById('lem-horario').value = '09:00';
+    document.getElementById('lem-desc').value = 'Endereço: ' + (p.endereco || '—') + '\n' + (obs ? 'Última visita: ' + obs : '');
+    openModal('modal-lembrete');
+  } else {
+    verPessoa(revisitaPesId);
+    showToast('✅ Revisita registrada!');
+  }
+}
+
 function renderTudo() {
   renderListaCampo();
   renderListaEstudantes();
+  renderListaPessoas();
   renderResumoAnual();
   atualizarBarraMeta();
 }
