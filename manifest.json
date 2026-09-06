@@ -1,0 +1,15 @@
+{
+  "name": "Registro de Campo",
+  "short_name": "Campo",
+  "description": "Registro de horas para pioneiros regulares",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FBF3F0",
+  "theme_color": "#B5707A",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icone-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icone-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icone-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

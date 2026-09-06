@@ -3,9 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#B5707A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Registro de Campo">
 <title>Registro de Campo</title>
 <style>
   :root {
@@ -1887,6 +1889,15 @@ function renderTudo() {
   renderListaPessoas();
   renderResumoAnual();
   atualizarBarraMeta();
+}
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.log('SW registrado:', reg.scope))
+      .catch(err => console.log('SW erro:', err));
+  });
 }
 </script>
 </body>
